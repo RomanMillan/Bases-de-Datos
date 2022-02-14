@@ -1,0 +1,6 @@
+UTILIADA DML
+
+--Para pasar los datos de una tabla a otra que ya está creada
+
+INSERT INTO t_cargos_backup (id,descripcion) 
+SELECT idcargo, descripcion FROM t_cargos;

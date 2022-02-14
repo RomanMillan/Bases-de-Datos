@@ -1,0 +1,3 @@
+desactivar una constraint : ALTER TABLE tema enable CONSTRAINT ck_codtema;
+
+

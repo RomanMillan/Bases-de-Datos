@@ -1,0 +1,4 @@
+alter session set "_oracle_script"=true;  
+create user dummy identified by dummy;
+GRANT CONNECT, RESOURCE, DBA TO dummy;
+

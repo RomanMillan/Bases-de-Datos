@@ -1,0 +1,4 @@
+MySQL
+1 crear BD  -> create database db_exampleName;
+2 Crear usuario -> create user 'dummy'@'%' identified by 'dummy';
+3 conceder permisos -> grant all on db_exampleName.* to 'dummy'@'%';

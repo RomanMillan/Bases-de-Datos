@@ -1,0 +1,6 @@
+los dos tipos de delibilidad
+
+existencia: no necesitas la PK de su "padre". ya que tiene su propia clave. 'E'
+
+identificaión: se necetia la PK de su padre. no tiene clave propia. 'I' 
+la clave PK se llevará hasta la otra del hijo atravesandola
