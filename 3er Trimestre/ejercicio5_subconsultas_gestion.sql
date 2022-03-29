@@ -17,7 +17,7 @@
     
     --3. Número de clientes que en todas sus facturas tienen un 16% de IVA 
     --(los clientes deben tener al menos una factura).
-        SELECT COUNT(c.CODCLI) num_clientes
+        SELECT COUNT(c.CODCLI  num_clientes)
            FROM clientes c
            WHERE c.CODCLI IN
                        (SELECT f.CODCLI
@@ -28,6 +28,16 @@
                        FROM FACTURAS f
                        WHERE f.IVA != 16);
     
+                      
+          --mirar esta forma
+          SELECT count(f.codfac)
+          FROM facturas f
+          WHERE f.iva =ALL
+			          (SELECT f.CODCLI
+			                       FROM FACTURAS f
+			                       WHERE f.IVA = 16);
+                      
+                      
     --4. Fecha de la factura con mayor importe (sin tener en cuenta descuentos
     --ni impuestos).
          SELECT f.FECHA 
@@ -48,15 +58,15 @@
     --superior a 15 euros y de los que no hay ninguna factura en el último 
     --trimestre del año pasado.
         SELECT COUNT(a.CODART) num_articulos
-        FROM ARTICULOS a, LINEAS_FAC lf, FACTURAS f
+        FROM ARTICULOS a, LINEAS_FAC lf
         WHERE a.CODART = lf.CODART
-        AND f.CODFAC = lf.CODFAC
         AND a.STOCK > 20
         AND a.PRECIO > 15
-        AND f.CODFAC NOT IN
-                    (SELECT f2.CODFAC
-                    FROM FACTURAS f2
-                    WHERE EXTRACT(YEAR FROM f2.FECHA) = EXTRACT(YEAR FROM SYSDATE -1));
+        AND lf.CODFAC NOT IN
+                    (SELECT f.CODFAC
+                    FROM FACTURAS f
+                    WHERE EXTRACT(YEAR FROM f.FECHA) = EXTRACT(YEAR FROM SYSDATE -1)
+                   	AND EXTRACT(MONTH FROM f.FECHA)IN(10,11,12));
         
     
     --7. Obtener el número de clientes que en todas las facturas del año 
@@ -68,7 +78,7 @@
                     FROM FACTURAS f
                     WHERE f.IVA != 0
                     AND f.IVA IS NOT NULL
-                    AND EXTRACT(YEAR FROM f.FECHA) = EXTRACT(YEAR FROM SYSDATE -1));
+                    AND EXTRACT(YEAR FROM f.FECHA) = EXTRACT(YEAR FROM SYSDATE)-1);
     
     --8. Clientes (código y nombre) que fueron preferentes durante el mes de 
     --noviembre del año pasado y que en diciembre de ese mismo año no tienen 
@@ -81,17 +91,18 @@
                     (SELECT distinct f.CODCLI
                     FROM FACTURAS f, LINEAS_FAC fl
                     WHERE f.CODFAC = fl.CODFAC
-                    AND fl.PRECIO >= 50
+                    AND fl.PRECIO >60.50
                     AND EXTRACT(MONTH FROM f.FECHA)=11
                     AND EXTRACT(YEAR FROM f.FECHA) = EXTRACT(YEAR FROM SYSDATE -1));
     
+                   
     --9. Código, descripción y precio de los diez artículos más caros.
         SELECT CODART, DESCRIP, PRECIO
         FROM (SELECT a.CODART, a.DESCRIP, a.PRECIO, SUM(a.PRECIO)
              FROM ARTICULOS a
              GROUP BY a.CODART, a.DESCRIP, a.PRECIO
              ORDER BY SUM(a.PRECIO)desc)
-        WHERE rownum<=20; 
+        WHERE rownum<=10; 
                     
     
     --10. Nombre de la provincia con mayor número de clientes.
@@ -109,7 +120,7 @@
     --11. Código y descripción de los artículos cuyo precio es mayor de 90,15
     --euros y se han vendido menos de 10 unidades (o ninguna) durante el año
     --pasado.
-        SELECT a.CODART, a.DESCRIP
+        SELECT distinct a.CODART, a.DESCRIP
         FROM ARTICULOS a, LINEAS_FAC lf
         WHERE a.PRECIO > 90.15
         AND a.CODART = lf.CODART
@@ -134,9 +145,13 @@
         FROM CLIENTES c, FACTURAS f, LINEAS_FAC fl
         WHERE c.CODCLI = f.CODCLI
         AND f.CODFAC = fl.CODFAC
-        AND fl.PRECIO =
-                    (SELECT MAX(lf2.precio)
-                    FROM LINEAS_FAC lf2);
+        GROUP BY c.CODCLI , c.NOMBRE 
+        AND SUM(fl.PRECIO) =
+                    (SELECT MAX(COUNT(lf2.precio))
+                    FROM LINEAS_FAC lf2, cliente c2, FACTURAS f2  
+                   	WHERE c2.CODCLI = f2.CODCLI
+        			AND f2.CODFAC = fl2.CODFAC 
+        			GROUP BY c2.COD_CLIENTE);
     
     --14. Código y descripción de aquellos artículos con un precio superior 
     --a la media y que hayan sido comprados por más de 5 clientes.
