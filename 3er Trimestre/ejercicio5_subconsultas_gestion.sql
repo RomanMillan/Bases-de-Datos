@@ -160,13 +160,13 @@
         WHERE a.CODART = lf.CODART
         AND lf.CODFAC = f.CODFAC
         AND a.PRECIO > 
-                    (SELECT AVG(a2.PRECIO)
+                    (SELECT AVG(NVL(a2.PRECIO,0))
                     FROM ARTICULOS a2)
         AND f.CODCLI IN
                     (SELECT f2.CODCLI
                     FROM FACTURAS f2, LINEAS_FAC lf2
                     WHERE f2.CODFAC = lf2.CODFAC
-                    GROUP BY lf2.CODFAC, f2.CODCLI
+                    GROUP BY lf2.CODART, f2.CODCLI
                     HAVING COUNT(f2.CODCLI)>5);
         
         

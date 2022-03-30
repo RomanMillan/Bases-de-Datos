@@ -15,11 +15,19 @@
    --inferior o igual a 45. Los datos deben salir ordenados por el nombre del pez,
     --y para el mismo pez por el peso (primero los más grandes)y para el mismo peso 
     --por la talla (primero los más grandes).
-        SELECT c.PESO, c.TALLA, c.PEZ
-        FROM CAPTURASSOLOS c
-        WHERE c.TALLA <= 45
-        ORDER BY c.PEZ, c.PESO DESC,  c.TALLA DESC;
     
+       -- BIEN HECHO
+       SELECT  PESO, TALLA, PEZ
+       FROM CAPTURASSOLOS 
+		WHERE TALLA <= 45
+		UNION
+		SELECT  PESO, TALLA, PEZ
+       FROM CAPTURASSOLOS 
+		WHERE TALLA <= 45
+	    ORDER BY PEZ DESC, PESO DESC, TALLA DESC  ;     
+       
+	    
+	    
     --3. Obtener los nombres y apellidos de los afiliados que o bien tienen la 
     --licencia de pesca que comienzan con una A (mayúscula o minúscula), o 
     --bien el teléfono empieza en 9 y la dirección comienza en Avda.
@@ -40,12 +48,13 @@
    -- 5. Mostrar el nombre y apellidos de cada afiliado, junto con la ficha de 
    --los afiliados que lo han avalado alguna vez como primer avalador.
         --NO COMPRENDO EL ENUNCIADO
-        SELECT a.NOMBRE, a.APELLIDOS, a.NOMBRE, a.APELLIDOS
-        FROM AFILIADOS a, CAPTURASSOLOS c, CAPTURASSOLOS c2
+        SELECT a.NOMBRE, a.APELLIDOS, a2.nombre, a2.APELLIDOS, a3.NOMBRE, a3.APELLIDOS
+        FROM AFILIADOS a, CAPTURASSOLOS c, afiliados a2, afiliados a3
         WHERE a.FICHA = c.FICHA
-        AND c.FICHA = c2.FICHA
-        GROUP BY a.FICHA, a.NOMBRE, a.APELLIDOS, a.NOMBRE, a.APELLIDOS;
-        
+        AND a2.FICHA = c.AVAL1
+        AND a3.FICHA = c.AVAL2;
+		
+
     --6. Obtén los cauces y en qué lugar de ellos han encontrado tencas (tipo de pez) 
     --cuando nuestros afiliados han ido a pescar solos, indicando la comunidad a 
     --la que pertenece dicho lugar. (no deben salir valores repetidos)
@@ -73,8 +82,10 @@
    -- 9. Mostrar el nombre y apellidos de cada afiliado, junto con el nombre y 
    --apellidos de los afiliados que lo han avalado alguna vez como segundo avalador.
         -- NO SE HACERLO
-        SELECT a.NOMBRE, a.APELLIDOS
-        FROM AFILIADOS a, AFILIADOS a2;
+       SELECT DISTINCT a.NOMBRE, a.APELLIDOS, a2.nombre, a2.APELLIDOS
+        FROM AFILIADOS a, CAPTURASSOLOS c, afiliados a2
+        WHERE a.FICHA = c.FICHA
+        AND a2.FICHA = c.AVAL2;
         
     --10. Indica todos los eventos en los que participó el afiliado 3796 en 1995 
     --que no consiguió trofeo, ordenados descendentemente por fecha.
