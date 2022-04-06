@@ -17,7 +17,7 @@
     
     --3. Número de clientes que en todas sus facturas tienen un 16% de IVA 
     --(los clientes deben tener al menos una factura).
-        SELECT COUNT(c.CODCLI  num_clientes)
+        SELECT COUNT(c.CODCLI)num_clientes
            FROM clientes c
            WHERE c.CODCLI IN
                        (SELECT f.CODCLI
@@ -146,12 +146,12 @@
         WHERE c.CODCLI = f.CODCLI
         AND f.CODFAC = fl.CODFAC
         GROUP BY c.CODCLI , c.NOMBRE 
-        AND SUM(fl.PRECIO) =
-                    (SELECT MAX(COUNT(lf2.precio))
-                    FROM LINEAS_FAC lf2, cliente c2, FACTURAS f2  
+        HAVING SUM(fl.PRECIO) =
+                    (SELECT MAX(SUM(lf2.precio))
+                    FROM LINEAS_FAC lf2, clientes c2, FACTURAS f2  
                    	WHERE c2.CODCLI = f2.CODCLI
-        			AND f2.CODFAC = fl2.CODFAC 
-        			GROUP BY c2.COD_CLIENTE);
+        			AND f2.CODFAC = lf2.CODFAC 
+        			GROUP BY c2.CODCLI);
     
     --14. Código y descripción de aquellos artículos con un precio superior 
     --a la media y que hayan sido comprados por más de 5 clientes.
