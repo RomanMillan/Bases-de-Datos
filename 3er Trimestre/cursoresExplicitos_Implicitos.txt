@@ -1,0 +1,94 @@
+--CURSOR IMPLICITO
+cursor implicito (solo un dato) porque tiene un SELECT con un INTO; nos aseguramos
+que sea implicito con un WHERE con id;
+
+EJ:
+CREATE OR REPLACE
+PROCEDURE TAMHOTEL (cod Hotel.ID%TYPE)
+AS
+  NumHabitaciones  Hotel.Nhabs%TYPE;
+  Comentario       VARCHAR2(40);
+BEGIN
+  -- Número de habitaciones del Hotel cuyo ID es cod
+  SELECT Nhabs INTO NumHabitaciones
+  FROM Hotel WHERE ID=cod;
+
+  IF NumHabitaciones IS NULL THEN
+    Comentario := 'de tamaño indeterminado';
+  ELSIF NumHabitaciones < 50 THEN
+    Comentario := 'Pequeño';
+  ELSIF NumHabitaciones < 100 THEN
+    Comentario := 'Mediano';
+  ELSE
+    Comentario := 'Grande';
+  END IF;
+
+  DBMS_OUTPUT.PUT_LINE ('El hotel con ID '|| cod ||' es '|| Comentario);
+END;
+
+
+--CURSOR EXPLICITOS
+EJ
+DECLARE
+  CURSOR Hoteles IS        -- Hoteles es un cursor explícito
+   SELECT * FROM Hotel;    -- Almacena varios registros
+BEGIN
+  FOR registro IN Hoteles  -- No es necesario declarar registro
+  LOOP
+    DBMS_OUTPUT.PUT_LINE ('Cód. Hotel  : ' || registro.ID);
+    DBMS_OUTPUT.PUT_LINE ('Habitaciones: ' || registro.NHABS);
+    DBMS_OUTPUT.PUT_LINE ('       ----      ');
+  END LOOP;
+END;
+
+
+--otra forma mas dificil (evitar esta forma)
+DECLARE
+  CURSOR Hoteles IS         -- Hoteles es un cursor explícito
+   SELECT * FROM Hotel;     -- Almacena varios registros
+  registro Hoteles%ROWTYPE; -- Es necesario declarar esta variable
+BEGIN
+  OPEN Hoteles;   -- Abrimos cursor
+  LOOP
+    FETCH Hoteles INTO registro;  -- Recuperamos un registro (una fila)
+    EXIT WHEN Hoteles%NOTFOUND;   -- Salimos si no hay más registros
+    DBMS_OUTPUT.PUT_LINE ('Cód. Hotel  : ' || registro.ID);
+    DBMS_OUTPUT.PUT_LINE ('Habitaciones: ' || registro.NHABS);
+    DBMS_OUTPUT.PUT_LINE ('       ----      ');
+  END LOOP;
+  CLOSE Hoteles;  -- Cerramos cursor
+END;
+
+
+
+--CREAR REGISTROS 
+
+TYPE Tipo_Registro IS RECORD(
+  Campo1 Tipo1 [[NOT NULL] :=Expr1],
+  Campo2 Tipo2 [[NOT NULL] :=Expr2],
+  . . .
+  CampoN TipoN [[NOT NULL] :=ExprN]
+);
+
+EJ.
+
+DECLARE
+  TYPE RegPersona IS RECORD(
+    CODIGO NUMBER(2),
+    NOMBRE VARCHAR2(40),
+    EDAD   NUMBER
+  );
+  Pepe RegPersona;
+BEGIN
+  Pepe.CODIGO := 1;
+  Pepe.NOMBRE := 'Pepe';
+  Pepe.EDAD   := 30;
+  DBMS_OUTPUT.PUT_LINE ('Código: ' || Pepe.CODIGO);
+  DBMS_OUTPUT.PUT_LINE ('Nombre: ' || Pepe.NOMBRE);
+  DBMS_OUTPUT.PUT_LINE ('Edad  : ' || Pepe.EDAD);
+  INSERT INTO PERSONAS VALUES Pepe;
+END;
+
+
+
+
