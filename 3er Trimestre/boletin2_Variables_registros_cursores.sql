@@ -23,6 +23,10 @@ BEGIN
 	DBMS_OUTPUT.PUT_LINE ('Salario maximo : ' || v_maxi);
 	DBMS_OUTPUT.PUT_LINE ('Salario minimo : ' || v_mini);
 	DBMS_OUTPUT.PUT_LINE ('Media salario  : ' || v_media);
+
+	EXCEPTION
+	WHEN NO_DATA_FOUND THEN
+		DBMS_OUTPUT.PUT_LINE ('No se ha encontrado datos');
 END;
 
 BEGIN 
@@ -38,6 +42,33 @@ Utiliza un cursor explícito. La transacción no puede quedarse a medias. Si
 por cualquier razón no es posible actualizar todos estos salarios, debe
 deshacerse el trabajo a la situación inicial
 */
+CREATE OR REPLACE 
+PROCEDURE ej2
+AS
+	CURSOR c_salario IS
+	SELECT *
+	FROM EMPLEADOS e 
+	WHERE e.NUMHI > 2
+	AND e.SALAR < 2000; 
+	salarAnt NUMBER(5);
+	
+BEGIN
+
+	FOR i IN c_salario LOOP
+		salarAnt := i.salar;	
+	
+		UPDATE EMPLEADOS e 
+		SET e.salar = e.SALAR*1.10
+		WHERE e.numen = i.numen;
+	
+		DBMS_OUTPUT.PUT_LINE ('Codigo Empleado  : ' || i.numen);
+		DBMS_OUTPUT.PUT_LINE ('Nombre Empleado  : ' || i.nomen);
+		DBMS_OUTPUT.PUT_LINE ('Nombre Empleado  : ' || salarAnt);
+	END LOOP;
+END;
+
+SELECT e.SALAR*1.10,  FROM EMPLEADOS e WHERE e.NUMHI > 2;
+UPDATE EMPLEADOS e SET e.salar = e.SALAR*1.10 WHERE e.numen = 110;
 
 /*
 3. Escribe un procedimiento que reciba dos parámetros (número de

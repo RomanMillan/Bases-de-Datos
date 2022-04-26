@@ -12,6 +12,7 @@ BEGIN
 	FOR i IN c_Empleados LOOP
     	DBMS_OUTPUT.PUT_LINE('nombre: ' || i.nomem);
    		DBMS_OUTPUT.PUT_LINE('sueldo: ' || i.salar);
+   		DBMS_OUTPUT.PUT_LINE('____________________');
   	END LOOP;
 END;
 
@@ -36,6 +37,7 @@ BEGIN
 		EXIT WHEN c_Empleados%NOTFOUND;
 		DBMS_OUTPUT.PUT_LINE('nombre: ' || i.nomem);
    		DBMS_OUTPUT.PUT_LINE('sueldo: ' || i.salar);
+   		DBMS_OUTPUT.PUT_LINE('____________________');
 	END LOOP;
 	CLOSE c_Empleados;
 	
