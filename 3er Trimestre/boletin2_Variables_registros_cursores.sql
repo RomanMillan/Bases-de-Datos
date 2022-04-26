@@ -42,6 +42,8 @@ Utiliza un cursor explícito. La transacción no puede quedarse a medias. Si
 por cualquier razón no es posible actualizar todos estos salarios, debe
 deshacerse el trabajo a la situación inicial
 */
+
+
 CREATE OR REPLACE 
 PROCEDURE ej2
 AS
@@ -56,19 +58,61 @@ BEGIN
 
 	FOR i IN c_salario LOOP
 		salarAnt := i.salar;	
-	
 		UPDATE EMPLEADOS e 
-		SET e.salar = e.SALAR*1.10
-		WHERE e.numen = i.numen;
+		SET e.salar = i.SALAR*1.10
+		WHERE e.numem = i.numem;
 	
-		DBMS_OUTPUT.PUT_LINE ('Codigo Empleado  : ' || i.numen);
-		DBMS_OUTPUT.PUT_LINE ('Nombre Empleado  : ' || i.nomen);
-		DBMS_OUTPUT.PUT_LINE ('Nombre Empleado  : ' || salarAnt);
+		DBMS_OUTPUT.PUT_LINE ('Codigo Empleado  : ' || i.numem);
+		DBMS_OUTPUT.PUT_LINE ('Nombre Empleado  : ' || i.nomem);
+		DBMS_OUTPUT.PUT_LINE ('Salario Anterior  : ' || salarAnt);
+		DBMS_OUTPUT.PUT_LINE ('Salario Final  : ' || i.salar);
+		DBMS_OUTPUT.PUT_LINE ('__________________ ');
 	END LOOP;
 END;
 
-SELECT e.SALAR*1.10,  FROM EMPLEADOS e WHERE e.NUMHI > 2;
-UPDATE EMPLEADOS e SET e.salar = e.SALAR*1.10 WHERE e.numen = 110;
+BEGIN
+    ej2();
+END;
+
+
+CREATE OR REPLACE 
+PROCEDURE ej2
+AS
+	CURSOR c_Salario IS
+	SELECT *
+	FROM EMPLEADOS
+	WHERE EMPLEADOS.NUMHI > 2
+	AND EMPLEADOS.SALAR < 2000; 
+	i c_Salario%ROWTYPE;
+	salarAnt empleados.salar%TYPE;
+	
+BEGIN
+    OPEN c_Salario;
+        LOOP
+            FETCH c_Salario INTO i;
+            EXIT WHEN c_Salario%NOTFOUND;
+            salarAnt := i.salar;
+            
+            UPDATE EMPLEADOS e 
+            SET e.salar = e.SALAR*1.10
+            WHERE  e.numem = i.numem;
+            
+            DBMS_OUTPUT.PUT_LINE ('Codigo Empleado  : ' || i.NUMEM);
+            DBMS_OUTPUT.PUT_LINE ('Nombre Empleado  : ' || i.NOMEM);
+            DBMS_OUTPUT.PUT_LINE ('Salario Anterior  : ' || salarAnt);
+            DBMS_OUTPUT.PUT_LINE ('Salario Final  : ' || i.SALAR);
+            DBMS_OUTPUT.PUT_LINE ('__________________ ');
+        END LOOP;
+    CLOSE c_Salario;
+END;
+
+BEGIN
+ej2();
+END;
+
+
+SELECT e.SALAR*1.10  FROM EMPLEADOS e WHERE e.NUMHI > 2;
+UPDATE EMPLEADOS e SET e.salar = e.SALAR*1.10 WHERE e.numem = 110;
 
 /*
 3. Escribe un procedimiento que reciba dos parámetros (número de
