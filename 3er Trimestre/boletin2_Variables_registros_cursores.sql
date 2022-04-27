@@ -49,25 +49,34 @@ PROCEDURE ej2
 AS
 	CURSOR c_salario IS
 	SELECT *
-	FROM EMPLEADOS e 
-	WHERE e.NUMHI > 2
-	AND e.SALAR < 2000; 
-	salarAnt NUMBER(5);
+	FROM EMPLEADOS emp 
+	WHERE emp.NUMHI > 2
+	AND emp.SALAR < 2000; 
 	
 BEGIN
 
 	FOR i IN c_salario LOOP
-		salarAnt := i.salar;	
+        
+        DBMS_OUTPUT.PUT_LINE ('Codigo Empleado  : ' || i.numem);
+		DBMS_OUTPUT.PUT_LINE ('Nombre Empleado  : ' || i.nomem);
+		DBMS_OUTPUT.PUT_LINE ('Salario Anterior  : ' || i.salar);
+		
 		UPDATE EMPLEADOS e 
 		SET e.salar = i.SALAR*1.10
 		WHERE e.numem = i.numem;
 	
-		DBMS_OUTPUT.PUT_LINE ('Codigo Empleado  : ' || i.numem);
-		DBMS_OUTPUT.PUT_LINE ('Nombre Empleado  : ' || i.nomem);
-		DBMS_OUTPUT.PUT_LINE ('Salario Anterior  : ' || salarAnt);
+
 		DBMS_OUTPUT.PUT_LINE ('Salario Final  : ' || i.salar);
 		DBMS_OUTPUT.PUT_LINE ('__________________ ');
 	END LOOP;
+	COMMIT;
+	
+    EXCEPTION
+    WHEN NO_DATA_FOUND THEN 
+        DBMS_OUTPUT.PUT_LINE('Datos no encontrados');
+        ROLLBACK;
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error inesperado'); 
 END;
 
 BEGIN
@@ -82,36 +91,44 @@ AS
 	SELECT *
 	FROM EMPLEADOS
 	WHERE EMPLEADOS.NUMHI > 2
-	AND EMPLEADOS.SALAR < 2000; 
+	AND EMPLEADOS.SALAR < 2000;
+	 
 	i c_Salario%ROWTYPE;
-	salarAnt empleados.salar%TYPE;
 	
 BEGIN
     OPEN c_Salario;
         LOOP
             FETCH c_Salario INTO i;
             EXIT WHEN c_Salario%NOTFOUND;
-            salarAnt := i.salar;
+
+            DBMS_OUTPUT.PUT_LINE ('Codigo Empleado  : ' || i.NUMEM);
+            DBMS_OUTPUT.PUT_LINE ('Nombre Empleado  : ' || i.NOMEM);
+            DBMS_OUTPUT.PUT_LINE ('Salario Anterior  : ' || i.salar);
             
             UPDATE EMPLEADOS e 
             SET e.salar = e.SALAR*1.10
             WHERE  e.numem = i.numem;
             
-            DBMS_OUTPUT.PUT_LINE ('Codigo Empleado  : ' || i.NUMEM);
-            DBMS_OUTPUT.PUT_LINE ('Nombre Empleado  : ' || i.NOMEM);
-            DBMS_OUTPUT.PUT_LINE ('Salario Anterior  : ' || salarAnt);
             DBMS_OUTPUT.PUT_LINE ('Salario Final  : ' || i.SALAR);
             DBMS_OUTPUT.PUT_LINE ('__________________ ');
+
         END LOOP;
+        EXCEPTION
+        WHEN NO_DATA_FOUND THEN 
+            DBMS_OUTPUT.PUT_LINE('Datos no encontrados');
+            ROLLBACK;
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error inesperado');
     CLOSE c_Salario;
+    COMMIT;
 END;
 
 BEGIN
-ej2();
+    ej2();
 END;
 
 
-SELECT e.SALAR*1.10  FROM EMPLEADOS e WHERE e.NUMHI > 2;
+SELECT e.SALAR*1.10  FROM EMPLEADOS e WHERE e.NUMHI > 2 AND e.SALAR <2800;
 UPDATE EMPLEADOS e SET e.salar = e.SALAR*1.10 WHERE e.numem = 110;
 
 /*
