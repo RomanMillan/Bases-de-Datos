@@ -108,19 +108,22 @@ BEGIN
             UPDATE EMPLEADOS e 
             SET e.salar = e.SALAR*1.10
             WHERE  e.numem = i.numem;
-            
-            DBMS_OUTPUT.PUT_LINE ('Salario Final  : ' || i.SALAR);
+           	
+           
+            DBMS_OUTPUT.PUT_LINE ('Salario Final  : ' || i.SALAR*1.10);
             DBMS_OUTPUT.PUT_LINE ('__________________ ');
 
         END LOOP;
-        EXCEPTION
-        WHEN NO_DATA_FOUND THEN 
-            DBMS_OUTPUT.PUT_LINE('Datos no encontrados');
-            ROLLBACK;
-        WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('Error inesperado');
     CLOSE c_Salario;
-    COMMIT;
+   
+    COMMIT; 
+   EXCEPTION
+    WHEN NO_DATA_FOUND THEN 
+        DBMS_OUTPUT.PUT_LINE('Datos no encontrados');
+        ROLLBACK;
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error inesperado');
+    
 END;
 
 BEGIN
@@ -138,8 +141,97 @@ estos parámetros y que mostrar. los datos de los empleados que pertenezcan
 al departamento y con el número de hijos indicados. Al final se indicar. el
 número de empleados obtenidos
 */
+CREATE OR REPLACE 
+PROCEDURE ej3(num_dept NUMBER, hijos NUMBER)
+AS
+	CURSOR c_empleados(num_dept NUMBER, hijos NUMBER) IS
+	SELECT *
+	FROM EMPLEADOS
+	WHERE EMPLEADOS.NUMHI = hijos
+	AND empleados.NUMDE = num_dept;
+	 
+	i c_empleados%ROWTYPE;
+	num_emp_obtenidos NUMBER(5) := 0;
+BEGIN
+	OPEN c_empleados(num_dept, hijos);
+        LOOP
+            FETCH c_empleados INTO i;
+            EXIT WHEN c_empleados%NOTFOUND;
+           
+           num_emp_obtenidos := num_emp_obtenidos + 1;
+           END LOOP;
+          DBMS_OUTPUT.PUT_LINE('EL numero de empleados : ' || num_emp_obtenidos);
+    CLOSE c_empleados;
+END;
+
+
+BEGIN
+    ej3(121,3);
+END;
+
+
 
 /*
 4. Escribe un procedimiento con un parámetro para el nombre de empleado,
 que nos muestre la edad de dicho empleado en años, meses y días.
 */
+CREATE OR REPLACE 
+PROCEDURE ej4(nombre VARCHAR2)
+AS
+	CURSOR c_empleados IS
+	SELECT *
+	FROM EMPLEADOS
+	WHERE EMPLEADOS.NOMEM = nombre;
+	i c_empleados%ROWTYPE;
+
+	fecha_act empleados.fecna%TYPE;
+	edad_anio NUMBER(7,2);
+	edad_mes NUMBER(7,2);
+	edad_dias NUMBER(7);
+	edad_anio_p NUMBER(7,2);
+	edad_mes_p NUMBER(7,2);
+	edad_dias_p NUMBER(7);
+BEGIN
+	fecha_anio := EXTRACT(YEAR FROM sysdate);
+	fecha_mes := EXTRACT(MONTH FROM sysdate);
+	fecha_dias := EXTRACT(DAY FROM sysdate);
+
+	
+	OPEN c_empleados;
+        LOOP
+        	FETCH c_empleados INTO i;
+            EXIT WHEN c_empleados%NOTFOUND;
+           	fecha_anio_p := EXTRACT(YEAR FROM i.fecna);
+			fecha_mes_p := EXTRACT(MONTH FROM i.fecna);
+			fecha_dias_p := EXTRACT(DAY FROM i.fecna);
+           
+			fecha_anio_p := fecha_anio - fecha_anio_p;
+			fecha_mes_p := fecha_mes - fecha_mes_p;
+			
+			IF(fecha_mes_p <0) THEN
+				fecha_anio_p := fecha_anio_p -1;
+				fecha_mes_p := 12 - fecha_mes_p;
+			ELSE
+				fecha_dias := fecha_dias - fecha_dias_p;
+				IF(fecha_dias <0)THEN
+					
+				
+				
+				
+           DBMS_OUTPUT.PUT_LINE(edad_anio);
+        END LOOP;
+    CLOSE c_empleados;    
+END;
+
+
+BEGIN
+    ej4('MARCOS');
+END;
+
+
+
+
+
+
+
+
