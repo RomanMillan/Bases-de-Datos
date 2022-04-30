@@ -183,42 +183,26 @@ AS
 	FROM EMPLEADOS
 	WHERE EMPLEADOS.NOMEM = nombre;
 	i c_empleados%ROWTYPE;
-
-	fecha_act empleados.fecna%TYPE;
-	edad_anio NUMBER(7,2);
-	edad_mes NUMBER(7,2);
-	edad_dias NUMBER(7);
-	edad_anio_p NUMBER(7,2);
-	edad_mes_p NUMBER(7,2);
-	edad_dias_p NUMBER(7);
+    
+	fecha_na empleados.FECNA%TYPE;
+	fecha_act DATE;
+    meses_t NUMBER;
+    anios NUMBER;
+    meses NUMBER;
+    dias NUMBER;
 BEGIN
-	fecha_anio := EXTRACT(YEAR FROM sysdate);
-	fecha_mes := EXTRACT(MONTH FROM sysdate);
-	fecha_dias := EXTRACT(DAY FROM sysdate);
-
-	
+    fecha_act := sysdate;
 	OPEN c_empleados;
         LOOP
         	FETCH c_empleados INTO i;
             EXIT WHEN c_empleados%NOTFOUND;
-           	fecha_anio_p := EXTRACT(YEAR FROM i.fecna);
-			fecha_mes_p := EXTRACT(MONTH FROM i.fecna);
-			fecha_dias_p := EXTRACT(DAY FROM i.fecna);
-           
-			fecha_anio_p := fecha_anio - fecha_anio_p;
-			fecha_mes_p := fecha_mes - fecha_mes_p;
-			
-			IF(fecha_mes_p <0) THEN
-				fecha_anio_p := fecha_anio_p -1;
-				fecha_mes_p := 12 - fecha_mes_p;
-			ELSE
-				fecha_dias := fecha_dias - fecha_dias_p;
-				IF(fecha_dias <0)THEN
-					
-				
-				
-				
-           DBMS_OUTPUT.PUT_LINE(edad_anio);
+            fecha_na := i.fecna;
+            meses_t := MONTHS_BETWEEN(fecha_act, fecha_na);
+            anios := TRUNC(meses_t/12);
+            meses := TRUNC(mod(meses_t,12));
+            dias := TRUNC(fecha_act-ADD_MONTHS(fecha_na,TRUNC(meses_t)));
+            
+            DBMS_OUTPUT.PUT_LINE('Años: ' || anios || ' meses: ' || meses || ' dias: ' || dias);
         END LOOP;
     CLOSE c_empleados;    
 END;
