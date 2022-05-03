@@ -37,6 +37,10 @@ BEGIN
     WHERE DEPT.DEPTNO = EMP.DEPTNO
     AND UPPER(DEPT.DNAME) LIKE UPPER(nombre);
     RETURN suma_salario;
+   	
+   	EXCEPTION 
+   	WHEN NO_DATA_FOUND THEN
+   		DBMS_OUTPUT.PUT_LINE('DATOS NO ENCONTRADOS');
 END;
 
 SELECT devolver_sal('Research') FROM DUAL;
@@ -75,12 +79,19 @@ AS
     SELECT * 
     FROM EMP 
     WHERE EMP.DEPTNO = depart;
+   	num NUMBER;
 BEGIN
-    FOR i IN c_empleados LOOP
+    SELECT deptno  INTO num FROM dept WHERE deptno = depart;
+	
+   FOR i IN c_empleados LOOP
         DBMS_OUTPUT.PUT_LINE(i.empno ||' '|| i.ename ||' '||  i.job|| ' '|| i.mgr 
         || ' '|| i.hiredate || ' '|| i.sal || ' '|| i.comm || ' '|| i.deptno);
     END LOOP;
-END;
+	EXCEPTION
+	WHEN NO_DATA_FOUND THEN
+	DBMS_OUTPUT.PUT_LINE('datos no encontrados');
+   
+   END;
 
 BEGIN
     ej4(20);
@@ -113,7 +124,7 @@ BEGIN
 END;
 
 BEGIN
-    MostrarJefes('Sales');
+    MostrarJefes('Accounting ');
 END;
 
 
@@ -139,7 +150,7 @@ BEGIN
 END;
 
 BEGIN
-    ej6();
+    ej6(7082);
 END;
 
 /*
@@ -168,12 +179,82 @@ BEGIN
     END IF;
     
     EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-        DBMS_OUTPUT.PUT_LINE('Numero de departamento no encontrado');
     WHEN exception_sin_datos THEN
         DBMS_OUTPUT.PUT_LINE('El departamento buscado no tiene empleados');
 END;
 
 BEGIN
-   HallarNumEmp('sales'); 
+   HallarNumEmp('operation'); 
 END;
+
+/*
+ *8. Hacer un procedimiento que reciba como parámetro un código de empleado y 
+ *devuelva su nombre 
+ * */
+CREATE OR REPLACE 
+PROCEDURE ej8(cod NUMBER)
+AS
+	nombre emp.ename%TYPE;
+BEGIN
+	SELECT ename
+	INTO nombre
+	FROM emp
+	WHERE empno = cod;
+	
+	DBMS_OUTPUT.PUT_LINE('Nombre: ' || nombre);
+END;
+
+BEGIN
+	ej8(7900);
+END;
+
+/*
+ * 9. Codificar un procedimiento que reciba una cadena y la visualice al revés.
+ * */
+
+CREATE OR REPLACE 
+PROCEDURE ej9(cadena VARCHAR2)
+AS
+	cadena_re VARCHAR2(100);
+BEGIN
+	FOR i IN REVERSE 1..LENGTH(cadena) LOOP
+		cadena_re := cadena_re || SUBSTR(cadena,i,1);
+	end LOOP;
+	DBMS_OUTPUT.PUT_LINE(cadena_re);
+END;
+
+BEGIN
+	ej9('hola a todos');
+END;
+
+/*
+ * 10. Escribir un procedimiento que reciba una fecha y escriba el año, en número, 
+ * correspondiente a esa fecha
+ * */
+CREATE OR REPLACE 
+PROCEDURE ej10(fecha DATE)
+AS
+	anio VARCHAR2(20);
+BEGIN
+	anio := EXTRACT(YEAR FROM fecha);
+	DBMS_OUTPUT.PUT_LINE(anio);
+END;
+
+BEGIN
+	ej10(sysdate);
+END;
+
+/*
+ * 11. Realiza una función llamada CalcularCosteSalarial que reciba un nombre de
+ *  departamento y devuelva la suma de los salarios y comisiones de los empleados 
+ * de dicho departamento
+ * */
+CREATE OR REPLACE 
+PROCEDURE CalcularCosteSalarial(nom_dept VARCHAR2)
+AS
+BEGIN
+	
+END;
+
+
+
