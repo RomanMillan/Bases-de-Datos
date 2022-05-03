@@ -252,9 +252,116 @@ END;
 CREATE OR REPLACE 
 PROCEDURE CalcularCosteSalarial(nom_dept VARCHAR2)
 AS
+    total NUMBER(10);
+    no_datos EXCEPTION;
 BEGIN
-	
+	SELECT (SUM(emp.SAL) + SUM(emp.COMM)) suma_total
+	INTO total
+    FROM emp, DEPT
+    WHERE emp.DEPTNO = DEPT.DEPTNO
+    AND UPPER(DEPT.DNAME) LIKE UPPER(nom_dept);
+    IF(total IS NULL)THEN
+        RAISE no_datos;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Salario + comisiones: ' || total);
+    END IF;
+    EXCEPTION
+    WHEN no_datos THEN
+        DBMS_OUTPUT.PUT_LINE('Datos no encontrados');
 END;
 
+BEGIN
+    CalcularCosteSalarial('sales');
+END;
 
+/*
+12. Codificar un procedimiento que permita borrar un empleado cuyo número 
+se pasará en la llamada. 
+Si no existiera dar el correspondiente mensaje de error.
+*/
 
+CREATE OR REPLACE 
+PROCEDURE borrarEmpleado(num_empl NUMBER)
+AS
+    prueba NUMBER(10);
+BEGIN
+    -- para que la exception salte si el num_emple no es encontrado.
+    SELECT EMP.EMPNO INTO prueba FROM emp WHERE emp.EMPNO = num_empl;
+     
+    DELETE FROM emp 
+    WHERE emp.EMPNO = num_empl;
+    
+    EXCEPTION 
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Datos no encontrados');
+END;
+
+BEGIN
+    borrarEmpleado(2550);
+END;
+
+/*
+13. Realiza un procedimiento MostrarCostesSalariales que muestre los 
+nombres de todos los departamentos y el coste salarial de cada uno de ellos
+*/
+
+CREATE OR REPLACE 
+PROCEDURE MostrarCostesSalariales
+AS
+    CURSOR c_coste IS
+    SELECT DEPT.DNAME, SUM(NVL(EMP.SAL,0)) coste_salarial
+    FROM EMP, DEPT
+    WHERE DEPT.DEPTNO = EMP.DEPTNO(+)
+    GROUP BY DEPT.DNAME;
+BEGIN
+    FOR i IN c_coste LOOP
+        DBMS_OUTPUT.PUT_LINE('Nombre Depart: ' || i.dname 
+        || ' Coste salarial: ' || i.coste_salarial);
+    END LOOP;
+END;
+
+BEGIN
+    MostrarCostesSalariales();
+END;
+
+-- select independiente
+SELECT DEPT.DNAME, SUM(NVL(EMP.SAL,0)) coste_salarial
+FROM EMP, DEPT
+WHERE DEPT.DEPTNO = EMP.DEPTNO(+)
+GROUP BY DEPT.DNAME;
+
+/*
+14. Escribir un procedimiento que modifique la localidad de un departamento.
+ El procedimiento recibirá como parámetros el número del departamento 
+ y la localidad nueva.
+*/
+
+CREATE OR REPLACE 
+PROCEDURE ej14(num_dept NUMBER, nue_nom VARCHAR2)
+AS
+BEGIN
+    UPDATE dept 
+    SET dept.LOC = UPPER(nue_nom) 
+    WHERE dept.DEPTNO = num_dept;
+END;
+
+BEGIN
+    ej14(40, 'Sevilla');
+END;
+
+/*
+15. Realiza un procedimiento MostrarMasAntiguos que muestre el nombre del 
+empleado más antiguo de cada departamento junto con el nombre del departamento. 
+Trata las excepciones que consideres necesarias.
+*/
+CREATE OR REPLACE 
+PROCEDURE MostrarMasAntiguos
+AS
+BEGIN
+
+END;
+
+SELECT DEPT.DNAME, emp.ENAME
+FROM emp, DEPT
+WHERE DEPT.DEPTNO = emp.DEPTNO
+GROUP BY emp.DEPTNO, ;
