@@ -202,6 +202,10 @@ BEGIN
 	WHERE empno = cod;
 	
 	DBMS_OUTPUT.PUT_LINE('Nombre: ' || nombre);
+	
+	EXCEPTION 
+	WHEN NO_DATA_FOUND THEN
+		DBMS_OUTPUT.PUT_LINE('Datos no encontrado');
 END;
 
 BEGIN
@@ -260,12 +264,16 @@ BEGIN
     FROM emp, DEPT
     WHERE emp.DEPTNO = DEPT.DEPTNO
     AND UPPER(DEPT.DNAME) LIKE UPPER(nom_dept);
-    IF(total IS NULL)THEN
+    
+   	IF(total IS NULL)THEN
         RAISE no_datos;
+       --la de abajo es lo mismo pero en una linea.(lo muetra por consola)
+       --RAISE no_datos (-20001,'NO EXISTEN DATOS');
     ELSE
         DBMS_OUTPUT.PUT_LINE('Salario + comisiones: ' || total);
     END IF;
-    EXCEPTION
+    
+   	EXCEPTION
     WHEN no_datos THEN
         DBMS_OUTPUT.PUT_LINE('Datos no encontrados');
 END;
@@ -297,7 +305,7 @@ BEGIN
 END;
 
 BEGIN
-    borrarEmpleado(2550);
+    borrarEmpleado(7369);
 END;
 
 /*
@@ -318,6 +326,9 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('Nombre Depart: ' || i.dname 
         || ' Coste salarial: ' || i.coste_salarial);
     END LOOP;
+   EXCEPTION
+   WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('Error inesperado');
 END;
 
 BEGIN
@@ -357,14 +368,43 @@ Trata las excepciones que consideres necesarias.
 CREATE OR REPLACE 
 PROCEDURE MostrarMasAntiguos
 AS
-BEGIN
+	CURSOR c_antiguos IS
+	SELECT DEPT.DNAME nom_dep,MIN(emp.hiredate) fecha
+	FROM emp, dept
+	WHERE dept.DEPTNO = emp.DEPTNO
+	GROUP BY dept.DNAME;
 
+BEGIN
+	FOR i IN c_antiguos LOOP
+		DBMS_OUTPUT.PUT_LINE('Nombre dep: '||i.nom_dep ||' fecha: '||i.fecha);
+	end LOOP;
+	
 END;
 
-SELECT DEPT.DNAME,MIN(emp.hiredate)
-FROM emp, dept
-WHERE dept.DEPTNO = emp.DEPTNO
-GROUP BY dept.DNAME;
+
+BEGIN
+	MostrarMasAntiguos();
+END;
+
+
+CREATE OR REPLACE 
+PROCEDURE MostrarMasAntiguos2
+AS
+	CURSOR c_antiguos IS
+	SELECT DEPT.DNAME nom_dep,MIN(emp.hiredate) fecha
+	FROM emp, dept
+	WHERE dept.DEPTNO = emp.DEPTNO
+	GROUP BY dept.DNAME;
+
+BEGIN
+	FOR i IN c_antiguos LOOP
+		DBMS_OUTPUT.PUT_LINE('Nombre dep: '||i.nom_dep ||' fecha: '||i.fecha);
+	end LOOP;
+	
+END;
+
+
+
 
 
 SELECT DEPT.DNAME,MIN(emp.hiredate), COUNT(emp.EMPNO)
@@ -372,3 +412,6 @@ FROM emp, dept
 WHERE dept.DEPTNO = emp.DEPTNO
 GROUP BY dept.DNAME
 ORDER BY dept.DNAME;
+
+
+
