@@ -222,12 +222,21 @@ BEGIN
     from PEDIDO p 
     where p.CODIGO_CLIENTE = codigo;
 
+   	DELETE FROM DETALLE_PEDIDO dp  
+    WHERE dp.CODIGO_PEDIDO  = codigo;
+   
     DELETE FROM PEDIDO p
-    WHERE p.CODIGO_CLIENTE = codigo;
+    WHERE p.CODIGO_PEDIDO = codigo;
     return ped_borrados;
 END;
 
-select ej8(1)pedidos_bor from dual;
+DECLARE
+	variable NUMBER;
+BEGIN
+	variable:= ej8(1);
+	DBMS_OUTPUT.PUT_LINE(variable);
+END;
+
 
 --Pruebas
 select COUNT(p.CODIGO_CLIENTE) 
@@ -291,3 +300,5 @@ WHERE UPPER(pr.GAMA) LIKE UPPER('frutales');
 10.- Diseñar una aplicación que simule un listado de empleados según el
 siguiente formato:
 */
+
+
