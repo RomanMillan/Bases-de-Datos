@@ -11,7 +11,7 @@ BEGIN
     UPDATE emp
     SET emp.SAL = emp.SAL*1.10
     WHERE emp.SAL*0.05 < emp.COMM; 
-    
+    DBMS_OUTPUT.PUT_LINE('Numero de filas actualizadas: '||SQL%ROWCOUNT); --para contar el numero de filas modificadas
     EXCEPTION 
     WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('Error inesperado');
@@ -89,7 +89,8 @@ AS
 BEGIN
     UPDATE emp e
     SET e.SAL = e.sal - (e.sal*0.20)
-    WHERE UPPER(substr(e.ENAME,1,1)) LIKE UPPER(letra);
+    --WHERE UPPER(substr(e.ENAME,1,1)) LIKE UPPER(letra);
+   	WHERE UPPER(e.ENAME) LIKE UPPER(letra||'%');
     
     IF SQL%NOTFOUND THEN
         RAISE error;
@@ -103,7 +104,7 @@ BEGIN
 END;
 
 BEGIN
-    RecortarSueldos('f');
+    RecortarSueldos('n');
 END;
 
 /*
@@ -111,15 +112,51 @@ END;
 más nuevos de cada departamento.
 */
 
---ESTO SE TIENE QUE HACER CON LOS CURSORES ANIDADOS Y NO SE HACERLO.
-
 CREATE OR REPLACE
 PROCEDURE BorrarBecarios
 AS
+	CURSOR c_depart IS
+	SELECT DISTINCT e.DEPTNO dep
+	FROM EMP e;
+	
+	CURSOR c_emple IS
+	SELECT e.ENAME nom , e.HIREDATE 
+	FROM emp e
+	WHERE e.DEPTNO = num_dep
+	AND rownum <= 2
+	ORDER BY e.hiredate;
+	
+	num_dep NUMBER(5);
 BEGIN
+	FOR i IN c_depart LOOP
+		num_dep := i.dep;
+		FOR k IN c_emple LOOP
+			DBMS_OUTPUT.PUT_LINE(k.nom);
+		END LOOP;
+	end LOOP;
+	
     
 END;
+
+BEGIN
+	BorrarBecarios();
+END;
+
+
+
+-- Pruebas
+SELECT DISTINCT e.DEPTNO 
+FROM EMP e;
+
+SELECT e.ENAME , e.HIREDATE 
+FROM emp e
+WHERE e.DEPTNO = 20
+AND rownum <= 2
+ORDER BY e.hiredate;
 
 delete from emp e
 WHERE e.HIREDATE = (select MIN(e2.HIREDATE)
                 FROM emp e2);
+                
+               
+               

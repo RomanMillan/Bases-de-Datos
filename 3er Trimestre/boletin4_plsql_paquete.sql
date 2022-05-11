@@ -245,7 +245,11 @@ FUNCTION NUM_DEP(nombre VARCHAR2)
     INTO num
     FROM departamento d
     WHERE UPPER(d.NOMBRE_DEP) LIKE UPPER(nombre);
-    RETURN num;
+   	if(num =0)THEN
+   		RAISE_APPLICATION_ERROR(-20001,'Datos no existentes');
+   	END IF;
+    
+   	RETURN num;
   END NUM_DEP;
   
   PROCEDURE MOSTRAR_DEP (numero NUMBER)
@@ -260,7 +264,7 @@ FUNCTION NUM_DEP(nombre VARCHAR2)
       DBMS_OUTPUT.PUT_LINE('Nombre: '||nombre ||' presupuesto: '||presupuesto);
   END;
 
-  
+
   PROCEDURE BORRAR_DEP (numero NUMBER)
   IS
   BEGIN
@@ -277,7 +281,7 @@ FUNCTION NUM_DEP(nombre VARCHAR2)
 END;
 
 begin
-    GESTION.crear_dep('recursos',1000);
+    GESTION.crear_dep('economia',1000);
 END;
 
 BEGIN
