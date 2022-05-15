@@ -89,6 +89,123 @@ BEGIN
   INSERT INTO PERSONAS VALUES Pepe;
 END;
 
+-- declarar paquetes
+CREATE OR REPLACE 
+PACKAGE aritmetica IS 
+  version NUMBER := 1.0;
+	PROCEDURE mostrar_info;
+	FUNCTION suma 		(a NUMBER, b number)RETURN NUMBER;
+	FUNCTION resta 		(a NUMBER, b number)RETURN NUMBER;
+	FUNCTION multiplica (a NUMBER, b number)RETURN NUMBER;
+	FUNCTION divide 	(a NUMBER, b number)RETURN NUMBER;
+END;
+
+
+--crear el paquete
+CREATE OR REPLACE
+PACKAGE BODY aritmetica IS
+ -- procedure mostrar info
+  PROCEDURE mostrar_info IS
+  BEGIN
+    DBMS_OUTPUT.PUT_LINE
+      ('Paquete de operaciones aritméticas. Versión ' || version);
+  END mostrar_info;
+  --function suma
+  FUNCTION suma(a NUMBER, b NUMBER) 
+  RETURN NUMBER 
+  IS
+  BEGIN
+    RETURN (a+b);
+  END suma;
+...
+END;
+
+
+-- UPDATE CON EXCEPTION PERSONALIZADO
+CREATE OR REPLACE
+PROCEDURE RecortarSueldos(letra varchar2)
+AS
+    error EXCEPTION;
+BEGIN
+    UPDATE emp e
+    SET e.SAL = e.sal - (e.sal*0.20)
+    --WHERE UPPER(substr(e.ENAME,1,1)) LIKE UPPER(letra);
+   	WHERE UPPER(e.ENAME) LIKE UPPER(letra||'%');
+    
+    IF SQL%NOTFOUND THEN
+        RAISE error;
+    END IF;
+    commit;
+    
+    EXCEPTION
+    WHEN error THEN
+        DBMS_OUTPUT.PUT_LINE('Datos no encontrados');
+        rollback;
+END;
+
+--OTRO EXCEPTION Y PARA CONTRAR EL NUM DE FILAS MODIFICADAS
+CREATE OR REPLACE
+PROCEDURE b5_ej1
+AS
+BEGIN
+    UPDATE emp
+    SET emp.SAL = emp.SAL*1.10
+    WHERE emp.SAL*0.05 < emp.COMM; 
+    DBMS_OUTPUT.PUT_LINE('Numero de filas actualizadas: '||SQL%ROWCOUNT); --para contar el numero de filas modificadas
+    EXCEPTION 
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error inesperado');
+END;
 
 
 
+--DELETE para borrar datos
+DELETE FROM emp e
+WHERE e.HIREDATE = (select MIN(e2.HIREDATE)
+                FROM emp e2);
+
+
+--FUNCION EJEMPLO
+CREATE OR REPLACE
+FUNCTION devolver_sal(nombre DEPT.DNAME%TYPE)
+RETURN NUMBER
+AS
+    suma_salario EMP.SAL%TYPE;
+BEGIN
+    SELECT SUM(EMP.SAL)
+    INTO suma_salario
+    FROM DEPT, EMP 
+    WHERE DEPT.DEPTNO = EMP.DEPTNO
+    AND UPPER(DEPT.DNAME) LIKE UPPER(nombre);
+    RETURN suma_salario;
+   	
+   	EXCEPTION 
+   	WHEN NO_DATA_FOUND THEN
+   		DBMS_OUTPUT.PUT_LINE('DATOS NO ENCONTRADOS');
+END;
+
+SELECT devolver_sal('Research') FROM DUAL;
+
+
+--MOSTRAR AL REVES UNA CADENA (voltear una cadena)
+CREATE OR REPLACE 
+PROCEDURE ej9(cadena VARCHAR2)
+AS
+	cadena_re VARCHAR2(100);
+BEGIN
+	FOR i IN REVERSE 1..LENGTH(cadena) LOOP
+		cadena_re := cadena_re || SUBSTR(cadena,i,1);
+	end LOOP;
+	DBMS_OUTPUT.PUT_LINE(cadena_re);
+END;
+
+
+
+--MOSTRAR LOS 5 MAS VENDIDOS
+select CODIGO_PRODUCTO, NOMBRE, GAMA 
+from (select dp.CODIGO_PRODUCTO, p.NOMBRE, p.GAMA, COUNT(dp.CODIGO_PRODUCTO) cant_vendida
+      from DETALLE_PEDIDO dp, PRODUCTO p
+      WHERE dp.CODIGO_PRODUCTO = p.CODIGO_PRODUCTO
+      GROUP BY dp.CODIGO_PRODUCTO, p.NOMBRE, p.GAMA
+      ORDER BY COUNT(dp.CODIGO_PRODUCTO)desc)
+where rownum<=5;
