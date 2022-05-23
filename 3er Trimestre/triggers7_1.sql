@@ -39,7 +39,7 @@ END;
  * */
 CREATE OR REPLACE
 TRIGGER ej2
-BEFORE UPDATE ON empleados
+BEFORE UPDATE OF salario ON empleados
 FOR EACH ROW
 DECLARE
 	salarioAu NUMBER(10,2);
@@ -85,18 +85,22 @@ fecha DATE );
     INSERT INTO empleados
     VALUES ('14E','Sonia',NULL,5,8000,'SM',TO_DATE('20/09/2010','DD/MM/YYYY'));
  
+
 CREATE OR REPLACE
 TRIGGER ej3
 AFTER DELETE ON empleados
 FOR EACH ROW
 DECLARE
+
 BEGIN
-    INSERT INTO EMPLEADOS_BAJA
-    VALUES (:OLD.dni,:OLD.nomemp,:OLD.jefe,:OLD.departamento,:OLD.salario,USER,sysdate);
+		INSERT INTO EMPLEADOS_BAJA
+    	VALUES (:OLD.dni,:OLD.nomemp,:OLD.jefe,:OLD.departamento,:OLD.salario,USER,sysdate);
 END;
 
+
+
 DELETE empleados
-WHERE dni = '11K';
+WHERE dni = '1441K';
 
 
     INSERT INTO empleados
@@ -111,6 +115,7 @@ Crear un trigger para impedir que, al insertar un empleado, el empleado y su jef
 pertenecer a departamentos distintos. 
 Es decir, el jefe y el empleado deben pertenecer al mismo departamento.
 */
+/*
 CREATE OR REPLACE
 TRIGGER ej4
 BEFORE INSERT ON empleados
@@ -131,6 +136,27 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20006, 'Los jefes tienen que ser del mismo dep que el emp');
     END IF;
 END;
+*/
+
+CREATE OR REPLACE
+TRIGGER ej4
+BEFORE INSERT ON empleados
+FOR EACH ROW
+DECLARE
+    dep_jefe NUMBER(5);
+BEGIN
+    select emp.DEPARTAMENTO
+    INTO dep_jefe
+    from EMPLEADOS emp
+    WHERE emp.DNI = :NEW.jefe;
+    
+    IF(dep_jefe = :NEW.departamento)THEN
+	 RAISE_APPLICATION_ERROR(-20006, 'Los jefes tienen que ser del mismo dep que el emp');
+    END IF;
+END;
+
+
+
 
     delete empleados e 
     where e.DNI = '11K';
@@ -170,6 +196,58 @@ END;
 
     INSERT INTO empleados
     VALUES ('77I','Konic','14E',8,800,'SOE',TO_DATE('20/09/2010','DD/MM/YYYY'));
+
+
+   
+ --Ejercicio 6
+--Crea la tabla:
+CREATE TABLE controlCambios(
+usuario varchar2(30),
+fecha date,
+tipooperacion varchar2(30),
+datoanterior varchar2(30),
+datonuevo varchar2(30)
+);
+/*
+Creamos un trigger que se active cuando modificamos algún campo de "empleados" y
+almacene en "controlCambios" el nombre del usuario que realiza la actualización, la
+fecha, el tipo de operación que se realiza, el dato que se cambia y el nuevo valor.
+ * */
+   
+CREATE OR REPLACE
+TRIGGER ej6
+AFTER UPDATE ON empleados
+FOR EACH ROW
+DECLARE
+BEGIN
+	IF(:OLD.dni != :NEW.dni)THEN
+		INSERT INTO CONTROLCAMBIOS  
+		VALUES (USER,sysdate,'update',:OLD.dni,:NEW.dni);
+	ELSIF (:OLD.nomemp != :NEW.nomemp) THEN
+		INSERT INTO CONTROLCAMBIOS  
+		VALUES (USER,sysdate,'update',:OLD.nomemp,:NEW.nomemp);
+	ELSIF (:OLD.jefe != :NEW.jefe) THEN
+		INSERT INTO CONTROLCAMBIOS  
+		VALUES (USER,sysdate,'update',:OLD.jefe,:NEW.jefe);
+	ELSIF (:OLD.departamento != :NEW.departamento) THEN
+		INSERT INTO CONTROLCAMBIOS  
+		VALUES (USER,sysdate,'update',:OLD.departamento,:NEW.departamento);
+	ELSE 
+		INSERT INTO CONTROLCAMBIOS  
+		VALUES (USER,sysdate,'update',:OLD.salario,:NEW.salario);
+	END IF;	
+END;
+
+UPDATE empleados e
+SET e.NOMEMP = 'Paco'
+WHERE e.DNI = '11K';
+
+
+
+INSERT INTO CONTROLCAMBIOS  
+VALUES (USER,sysdate,'update',);
+
+
 
 -- HACER HASTA EL 5 y en clase hacer hasta el 9
 
