@@ -145,12 +145,13 @@ FOR EACH ROW
 DECLARE
     dep_jefe NUMBER(5);
 BEGIN
+	--obtenermos el depar del jefe
     select emp.DEPARTAMENTO
     INTO dep_jefe
     from EMPLEADOS emp
     WHERE emp.DNI = :NEW.jefe;
     
-    IF(dep_jefe = :NEW.departamento)THEN
+    IF(dep_jefe != :NEW.departamento)THEN
 	 RAISE_APPLICATION_ERROR(-20006, 'Los jefes tienen que ser del mismo dep que el emp');
     END IF;
 END;
@@ -185,11 +186,7 @@ BEGIN
     into total_s
     from EMPLEADOS e;
     
-    IF(total_s <=10000)THEN
-        INSERT INTO empleados
-        VALUES(:NEW.dni,:NEW.nomemp,:NEW.jefe,:NEW.departamento,:NEW.salario,
-                :NEW.usuario,:NEW.fecha);
-    ELSE
+    IF(total_s >10000)THEN
         RAISE_APPLICATION_ERROR(-20009, 'El salario total no puede superar los 10000');
     END IF;
 END;
@@ -248,11 +245,100 @@ INSERT INTO CONTROLCAMBIOS
 VALUES (USER,sysdate,'update',);
 
 
+/*
+ * Ejercicio 7
+Creamos otro trigger que se active cuando ingresamos un nuevo registro en "empleados",
+debe almacenar en "controlCambios" el nombre del usuario que realiza el ingreso, la
+fecha, el tipo de operación que se realiza , "null" en "datoanterior" (porque se dispara con
+una inserción) y en "datonuevo" el valor del nuevo dato.
+ * */
 
--- HACER HASTA EL 5 y en clase hacer hasta el 9
+CREATE OR REPLACE
+TRIGGER ej7
+AFTER INSERT ON empleados
+FOR EACH ROW
+DECLARE
+BEGIN
+	INSERT INTO CONTROLCAMBIOS  
+	VALUES (USER,sysdate,'update',NULL,:NEW.dni);
+END;
+
+INSERT INTO empleados
+VALUES ('11V','Sonia','14E',5,5000,'SM',TO_DATE('15/10/2010','DD/MM/YYYY'));
+
+
+CREATE TABLE pedidos
+( CODIGOPEDIDO NUMBER,
+FECHAPEDIDO DATE,
+FECHAESPERADA DATE,
+FECHAENTREGA DATE DEFAULT NULL,
+ESTADO VARCHAR2(15),
+COMENTARIOS CLOB,
+CODIGOCLIENTE NUMBER
+)
+
+/*Ej8
+ * Crea un trigger que al actualizar la columna fechaentrega de pedidos la compare con la
+fechaesperada.
+• Si fechaentrega es menor que fechaesperada añadirá a los comentarios 'Pedido
+entregado antes de lo esperado'.
+• Si fechaentrega es mayor que fechaesperada añadir a los comentarios 'Pedido
+entregado con retraso'.
+ * 
+ * */
+
+CREATE OR REPLACE PACKAGE codigopackage IS
+	codigo_n          pedidos.CODIGOPEDIDO%TYPE;
+	fechaesperada_n    pedidos.fechaesperada%TYPE;
+	fechaentrega_n  pedidos.fechaentrega%TYPE;
+END;
+
+CREATE OR REPLACE
+TRIGGER ej8
+AFTER UPDATE OF fechaentrega ON pedidos
+DECLARE
+BEGIN
+	codigopackage.codigo_n := :NEW.codigopedido;
+	codigopackage.fechaesperada_n := :OLD.fechaesperada;
+	codigopackage.fechaentrega_n := :NEW.fechaentrega; 
+	
+	IF(codigopackage.fechaentrega_n < codigopackage.fechaesperada_n) THEN
+		UPDATE PEDIDOS  p
+		SET p.COMENTARIOS = 'Pedido entregado antes de lo esperado'
+		WHERE p.CODIGOPEDIDO = codigopackage.codigo_n;
+	ELSE
+		UPDATE PEDIDOS  p
+		SET p.COMENTARIOS = 'Pedido entregado con retraso'
+		WHERE p.CODIGOPEDIDO = codigopackage.codigo_n;
+	END IF;
+END;
+
+Insert into PEDIDOS
+(CODIGOPEDIDO,FECHAPEDIDO,FECHAESPERADA,FECHAENTREGA,ESTADO,CODIGOCLIENTE)
+values(1,to_date('17/01/06','DD/MM/YY'),to_date('19/01/06','DD/MM/YY'),to_date('19/01/06','DD/MM/YY'),'Entregado',5);
+
+Insert into PEDIDOS
+(CODIGOPEDIDO,FECHAPEDIDO,FECHAESPERADA,FECHAENTREGA,ESTADO,CODIGOCLIENTE)
+values(2,to_date('23/10/07','DD/MM/YY'),to_date('28/10/07','DD/MM/YY'),to_date('26/10/07','DD/MM/YY'),'Entregado',5);
+
+Insert into PEDIDOS
+(CODIGOPEDIDO,FECHAPEDIDO,FECHAESPERADA,FECHAENTREGA,ESTADO,CODIGOCLIENTE)
+values(3,to_date('20/06/08','DD/MM/YY'),to_date('25/06/08','DD/MM/YY'),null,'Rechazado',5);
+
+Insert into PEDIDOS
+(CODIGOPEDIDO,FECHAPEDIDO,FECHAESPERADA,FECHAENTREGA,ESTADO,CODIGOCLIENTE)
+values(4,to_date('20/01/09','DD/MM/YY'),to_date('26/01/09','DD/MM/YY'),null,'Pendiente',5);
+
+UPDATE pedidos p
+SET p.FECHAENTREGA = to_date('18/01/06','DD/MM/YY')
+WHERE p.CODIGOPEDIDO = 1;
 
 
 
-
+/*Ejercicio 9
+Modifica el trigger anterior pero solo se ejecute si fechaentrega es mayor que
+fechaesperada
+ * 
+ * */
 
 
