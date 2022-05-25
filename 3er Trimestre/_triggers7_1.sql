@@ -287,29 +287,39 @@ entregado con retraso'.
  * 
  * */
 
-CREATE OR REPLACE PACKAGE codigopackage IS
-	codigo_n          pedidos.CODIGOPEDIDO%TYPE;
-	fechaesperada_n    pedidos.fechaesperada%TYPE;
-	fechaentrega_n  pedidos.fechaentrega%TYPE;
+CREATE OR REPLACE
+PACKAGE info_fecha as
+	fecha_ent    pedidios.fechaentrega%TYPE;
+	fecha_esp    pedidos.fechaesperada%TYPE;
+	info_codigo  pedidos.codigopedido%TYPE;
 END;
 
 CREATE OR REPLACE
-TRIGGER ej8
-AFTER UPDATE OF fechaentrega ON pedidos
-DECLARE
+TRIGGER conseguir_info
+BEFORE UPDATE OF fechaentrega ON pedidos
+FOR EACH ROW
 BEGIN
-	codigopackage.codigo_n := :NEW.codigopedido;
-	codigopackage.fechaesperada_n := :OLD.fechaesperada;
-	codigopackage.fechaentrega_n := :NEW.fechaentrega; 
-	
-	IF(codigopackage.fechaentrega_n < codigopackage.fechaesperada_n) THEN
-		UPDATE PEDIDOS  p
-		SET p.COMENTARIOS = 'Pedido entregado antes de lo esperado'
-		WHERE p.CODIGOPEDIDO = codigopackage.codigo_n;
+	IF :NEW.fechaentrega IS NOT NULL THEN
+		info_fecha.fecha_ent := :NEW.fechaentrega;
+		info_fecha.fecha_esp := :NEW.fechaesperada;
+		info_fecha.info_codigo := :NEW.codigopedido;
 	ELSE
-		UPDATE PEDIDOS  p
-		SET p.COMENTARIOS = 'Pedido entregado con retraso'
-		WHERE p.CODIGOPEDIDO = codigopackage.codigo_n;
+		RAISE_APPLICATION_ERROR(-20001, 'fechaentrega no valida');
+	END IF;
+END;
+
+CREATE OR REPLACE
+TRIGGER comparar_fechaentrega
+AFTER UPDATE OF fechaentrega ON pedidos
+BEGIN
+	IF(info_fecha.fecha_ent < info_fecha.fecha_esp)THEN
+		UPDATE pedidos
+		SET comentarios = 'Pedido entregado antes de lo esperado';
+		WHERE codigopedido = info_fecha.info_codigo;
+	ELSIF(info_fehca.fecha_ent > info_fecha.fecha_esp) THEN
+		UPDATE pedidos
+		SET comentarios = 'Pedido entregado con retraso';
+		WHERE codigopedido = info_fecha.info_codigo;
 	END IF;
 END;
 
